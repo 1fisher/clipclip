@@ -16,11 +16,6 @@ struct TimelineView: View {
     let onTrimBegin: (UUID) -> Void
     let onTrimEndAction: () -> Void
     let onSeek: (CGFloat) -> Void
-    let onPlayheadDragBegin: () -> Void
-    let onPlayheadDragEnd: () -> Void
-
-    @State private var playheadDragStartX: CGFloat = 0
-    @State private var isDraggingPlayhead = false
 
     private var totalWidth: CGFloat {
         max(CGFloat(totalDuration) * timeScale + 32, 200)
@@ -65,34 +60,8 @@ struct TimelineView: View {
                         }
                 )
             }
-            .overlay(alignment: .top) {
-                sharedPlayhead
-                    .allowsHitTesting(true)
-            }
         }
         .frame(maxHeight: timelineHeight + 40)
-    }
-
-    // MARK: - Shared Playhead
-
-    private var sharedPlayhead: some View {
-        PlayheadView(
-            position: playheadPosition,
-            height: timelineHeight + 40,
-            onDrag: { deltaX in
-                if !isDraggingPlayhead {
-                    isDraggingPlayhead = true
-                    playheadDragStartX = playheadPosition
-                    onPlayheadDragBegin()
-                }
-                let newX = max(0, playheadDragStartX + deltaX)
-                onSeek(newX)
-            },
-            onDragEnd: {
-                isDraggingPlayhead = false
-                onPlayheadDragEnd()
-            }
-        )
     }
 
 }

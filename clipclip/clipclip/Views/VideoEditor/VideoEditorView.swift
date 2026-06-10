@@ -190,11 +190,22 @@ struct VideoEditorView: View {
                 onTrimEnd: { id, newEnd in editorVM.updateTrimEnd(newEnd) },
                 onTrimBegin: { id in editorVM.beginTrimming(clipID: id) },
                 onTrimEndAction: { editorVM.endTrimming() },
-                onSeek: { x in editorVM.seekToPlayheadPosition(x: x) },
-                onPlayheadDragBegin: { editorVM.isPlayheadDragging = true },
-                onPlayheadDragEnd: { editorVM.isPlayheadDragging = false }
+                onSeek: { x in editorVM.seekToPlayheadPosition(x: x) }
             )
             .frame(maxWidth: .infinity)
+        }
+        .overlay(alignment: .top) {
+            PlayheadView(
+                position: editorVM.playheadPosition,
+                height: CGFloat(editorVM.tracks.count) * (trackHeight + trackSpacing) + trackSpacing + 40,
+                onDrag: { deltaX in
+                    editorVM.seekToPlayheadPosition(x: max(0, editorVM.playheadPosition + deltaX))
+                },
+                onDragEnd: {
+                    editorVM.isPlayheadDragging = false
+                }
+            )
+            .allowsHitTesting(true)
         }
     }
 
