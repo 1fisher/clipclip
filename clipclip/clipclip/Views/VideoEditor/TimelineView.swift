@@ -12,6 +12,7 @@ struct TimelineView: View {
     let onSelect: (UUID?) -> Void
     let onMoveClip: (UUID, UUID, Int) -> Void  // (clipID, targetTrackID, targetSortIndex)
     let onMoveToNewTrack: (UUID, TrackType, Int) -> Void  // (clipID, trackType, targetSortIndex)
+    let onUpdateClipOffset: (UUID, CGFloat) -> Void
     let onTrimStart: (UUID, Double) -> Void
     let onTrimEnd: (UUID, Double) -> Void
     let onTrimBegin: (UUID) -> Void
@@ -47,7 +48,10 @@ struct TimelineView: View {
                             onTrimStart: onTrimStart,
                             onTrimEnd: onTrimEnd,
                             onTrimBegin: onTrimBegin,
-                            onTrimEndAction: onTrimEndAction
+                            onTrimEndAction: onTrimEndAction,
+                            onUpdateClipOffset: { clipID, offsetX in
+                                onUpdateClipOffset(clipID, offsetX)
+                            }
                         )
                         .frame(width: totalWidth, alignment: .topLeading)
                     }

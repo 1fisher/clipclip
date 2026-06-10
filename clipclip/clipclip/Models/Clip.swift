@@ -13,6 +13,7 @@ final class Clip {
     var volume: Float
     var assetDuration: Double?
     var filename: String
+    var timelineOffset: Double = 0
 
     var track: Track?
 

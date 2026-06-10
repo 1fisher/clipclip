@@ -254,6 +254,8 @@ final class EditorViewModel {
             sortIndex: clip.sortIndex + 1,
             assetDuration: clip.assetDuration
         )
+        let splitWidth = (splitTimeSeconds - clip.startTime) * Double(timeScale)
+        newClip.timelineOffset = clip.timelineOffset + splitWidth
         newClip.track = track
 
         // Increment sort indices for clips after the split point
@@ -421,6 +423,13 @@ final class EditorViewModel {
         }
     }
 
+    func updateClipOffset(_ clipID: UUID, offsetX: CGFloat) {
+        guard let clip = allClips.first(where: { $0.id == clipID }) else { return }
+        captureUndo()
+        clip.timelineOffset = Double(offsetX)
+        refreshPlayer()
+    }
+
     // MARK: - Trim
 
     func beginTrimming(clipID: UUID) {
@@ -505,6 +514,7 @@ final class EditorViewModel {
             }
 
             let nextSortIndex = (videoTrack.clips.max(by: { $0.sortIndex < $1.sortIndex })?.sortIndex ?? -1) + 1
+            let nextOffset = videoTrack.clips.map { $0.timelineOffset + $0.duration * Double(timeScale) }.max().map { $0 + 4 } ?? 8
             let clip = Clip(
                 assetLocalIdentifier: filename,
                 startTime: 0,
@@ -513,6 +523,7 @@ final class EditorViewModel {
                 assetDuration: duration,
                 filename: url.deletingPathExtension().lastPathComponent
             )
+            clip.timelineOffset = nextOffset
             clip.track = videoTrack
 
             await MainActor.run {
