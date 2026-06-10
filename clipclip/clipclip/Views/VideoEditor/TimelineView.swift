@@ -15,7 +15,6 @@ struct TimelineView: View {
     let onTrimEnd: (UUID, Double) -> Void
     let onTrimBegin: (UUID) -> Void
     let onTrimEndAction: () -> Void
-    let onSeek: (CGFloat) -> Void
 
     private var totalWidth: CGFloat {
         max(CGFloat(totalDuration) * timeScale + 32, 200)
@@ -53,12 +52,6 @@ struct TimelineView: View {
                     Color.clear
                         .frame(height: 8)
                 }
-                .simultaneousGesture(
-                    SpatialTapGesture()
-                        .onEnded { value in
-                            onSeek(value.location.x)
-                        }
-                )
             }
         }
         .frame(maxHeight: timelineHeight + 40)

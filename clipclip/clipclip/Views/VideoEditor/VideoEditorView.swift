@@ -189,10 +189,13 @@ struct VideoEditorView: View {
                 onTrimStart: { id, newStart in editorVM.updateTrimStart(newStart) },
                 onTrimEnd: { id, newEnd in editorVM.updateTrimEnd(newEnd) },
                 onTrimBegin: { id in editorVM.beginTrimming(clipID: id) },
-                onTrimEndAction: { editorVM.endTrimming() },
-                onSeek: { x in editorVM.seekToPlayheadPosition(x: x) }
+                onTrimEndAction: { editorVM.endTrimming() }
             )
             .frame(maxWidth: .infinity)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture { location in
+            editorVM.seekToPlayheadPosition(x: location.x)
         }
         .overlay(alignment: .top) {
             PlayheadView(
