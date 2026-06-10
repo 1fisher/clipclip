@@ -10,6 +10,7 @@ struct TrackRowView: View {
 
     let onSelectClip: (UUID?) -> Void
     let onMoveClip: (UUID, UUID, Int) -> Void  // (clipID, targetTrackID, targetSortIndex)
+    let onMoveToNewTrack: (UUID, TrackType, Int) -> Void  // (clipID, trackType, targetSortIndex)
     let onTrimStart: (UUID, Double) -> Void
     let onTrimEnd: (UUID, Double) -> Void
     let onTrimBegin: (UUID) -> Void
@@ -18,6 +19,7 @@ struct TrackRowView: View {
     @State private var draggingClipID: UUID?
     @State private var dragOffset: CGSize = .zero
     @State private var dragTargetTrackID: UUID?
+    @State private var dragTargetIsNewTrack = false
     @State private var isDragActive = false
 
     private var sortedClips: [Clip] {
@@ -108,9 +110,16 @@ struct TrackRowView: View {
                     let verticalOffset = value.translation.height
                     if abs(verticalOffset) > trackHeight * 0.6 {
                         let direction = verticalOffset > 0 ? 1 : -1
-                        dragTargetTrackID = findRelativeTrack(offset: direction)?.id
+                        if let target = findRelativeTrack(offset: direction) {
+                            dragTargetTrackID = target.id
+                            dragTargetIsNewTrack = false
+                        } else {
+                            dragTargetTrackID = nil
+                            dragTargetIsNewTrack = true
+                        }
                     } else {
                         dragTargetTrackID = nil
+                        dragTargetIsNewTrack = false
                     }
                 }
             }
@@ -121,6 +130,7 @@ struct TrackRowView: View {
                         dragOffset = .zero
                         isDragActive = false
                         dragTargetTrackID = nil
+                        dragTargetIsNewTrack = false
                     }
                 }
 
@@ -131,7 +141,9 @@ struct TrackRowView: View {
                 let targetSortIndex = computeTargetSortIndex(at: dragX, excluding: dragID)
                 let targetTrackID = dragTargetTrackID ?? track.id
 
-                if targetTrackID != track.id || targetSortIndex != index {
+                if dragTargetIsNewTrack {
+                    onMoveToNewTrack(dragID, track.type, targetSortIndex)
+                } else if targetTrackID != track.id || targetSortIndex != index {
                     onMoveClip(dragID, targetTrackID, targetSortIndex)
                 }
             }

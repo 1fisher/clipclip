@@ -390,6 +390,37 @@ final class EditorViewModel {
         }
     }
 
+    func moveClipToNewTrack(_ clipID: UUID, trackType: TrackType, toIndex targetSortIndex: Int) {
+        guard let clip = allClips.first(where: { $0.id == clipID }),
+              let sourceTrack = clip.track
+        else { return }
+
+        captureUndo()
+
+        let newIndex = tracks.count
+        let newTrack = Track(type: trackType, orderIndex: newIndex)
+        newTrack.project = project
+        project.tracks.append(newTrack)
+
+        let oldSort = clip.sortIndex
+        sourceTrack.clips.removeAll { $0.id == clipID }
+        for c in sourceTrack.clips where c.sortIndex > oldSort {
+            c.sortIndex -= 1
+        }
+
+        clip.track = newTrack
+        clip.sortIndex = targetSortIndex
+        newTrack.clips.append(clip)
+
+        refreshTracks()
+
+        if let (a, b) = findJoinCandidate(for: clipID) {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                joinClips(a, b)
+            }
+        }
+    }
+
     // MARK: - Trim
 
     func beginTrimming(clipID: UUID) {

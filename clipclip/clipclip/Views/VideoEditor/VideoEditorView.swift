@@ -196,6 +196,9 @@ struct VideoEditorView: View {
                 onMoveClip: { clipID, targetTrackID, targetIndex in
                     editorVM.moveClip(clipID, toTrack: targetTrackID, toIndex: targetIndex)
                 },
+                onMoveToNewTrack: { clipID, trackType, targetIndex in
+                    editorVM.moveClipToNewTrack(clipID, trackType: trackType, toIndex: targetIndex)
+                },
                 onTrimStart: { id, newStart in editorVM.updateTrimStart(newStart) },
                 onTrimEnd: { id, newEnd in editorVM.updateTrimEnd(newEnd) },
                 onTrimBegin: { id in editorVM.beginTrimming(clipID: id) },

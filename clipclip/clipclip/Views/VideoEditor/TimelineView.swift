@@ -11,6 +11,7 @@ struct TimelineView: View {
 
     let onSelect: (UUID?) -> Void
     let onMoveClip: (UUID, UUID, Int) -> Void  // (clipID, targetTrackID, targetSortIndex)
+    let onMoveToNewTrack: (UUID, TrackType, Int) -> Void  // (clipID, trackType, targetSortIndex)
     let onTrimStart: (UUID, Double) -> Void
     let onTrimEnd: (UUID, Double) -> Void
     let onTrimBegin: (UUID) -> Void
@@ -39,6 +40,9 @@ struct TimelineView: View {
                             onSelectClip: onSelect,
                             onMoveClip: { clipID, targetTrackID, targetIndex in
                                 onMoveClip(clipID, targetTrackID, targetIndex)
+                            },
+                            onMoveToNewTrack: { clipID, trackType, targetIndex in
+                                onMoveToNewTrack(clipID, trackType, targetIndex)
                             },
                             onTrimStart: onTrimStart,
                             onTrimEnd: onTrimEnd,
