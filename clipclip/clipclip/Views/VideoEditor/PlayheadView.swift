@@ -4,18 +4,14 @@ import SwiftUI
 struct PlayheadView: View {
     let position: CGFloat
     let height: CGFloat
-    let onDrag: (CGFloat) -> Void
-    let onDragEnd: () -> Void
 
     var body: some View {
         ZStack(alignment: .top) {
-            // Vertical line
             Rectangle()
                 .fill(Color.red)
                 .frame(width: 2)
                 .frame(maxHeight: .infinity)
 
-            // Drag handle at the top
             Circle()
                 .fill(Color.red)
                 .frame(width: 12, height: 12)
@@ -26,14 +22,37 @@ struct PlayheadView: View {
         }
         .frame(width: 12)
         .position(x: position, y: height / 2)
-        .gesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { gesture in
-                    onDrag(gesture.translation.width)
-                }
-                .onEnded { _ in
-                    onDragEnd()
-                }
-        )
+    }
+}
+
+/// Playhead overlay that handles drag with correct position tracking.
+struct PlayheadDragOverlay: View {
+    let playheadPosition: CGFloat
+    let trackCount: Int
+    let onSeek: (CGFloat) -> Void
+
+    @State private var dragStartX: CGFloat = 0
+    @State private var isDragging = false
+
+    private var totalHeight: CGFloat {
+        CGFloat(trackCount) * (trackHeight + trackSpacing) + trackSpacing + 40
+    }
+
+    var body: some View {
+        PlayheadView(position: playheadPosition, height: totalHeight)
+            .gesture(
+                DragGesture(minimumDistance: 1)
+                    .onChanged { gesture in
+                        if !isDragging {
+                            isDragging = true
+                            dragStartX = playheadPosition
+                        }
+                        let newX = max(0, dragStartX + gesture.translation.width)
+                        onSeek(newX)
+                    }
+                    .onEnded { _ in
+                        isDragging = false
+                    }
+            )
     }
 }

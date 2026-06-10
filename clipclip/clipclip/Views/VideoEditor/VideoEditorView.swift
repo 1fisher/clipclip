@@ -198,15 +198,10 @@ struct VideoEditorView: View {
             editorVM.seekToPlayheadPosition(x: location.x)
         }
         .overlay(alignment: .top) {
-            PlayheadView(
-                position: editorVM.playheadPosition,
-                height: CGFloat(editorVM.tracks.count) * (trackHeight + trackSpacing) + trackSpacing + 40,
-                onDrag: { deltaX in
-                    editorVM.seekToPlayheadPosition(x: max(0, editorVM.playheadPosition + deltaX))
-                },
-                onDragEnd: {
-                    editorVM.isPlayheadDragging = false
-                }
+            PlayheadDragOverlay(
+                playheadPosition: editorVM.playheadPosition,
+                trackCount: editorVM.tracks.count,
+                onSeek: { x in editorVM.seekToPlayheadPosition(x: x) }
             )
             .allowsHitTesting(true)
         }
