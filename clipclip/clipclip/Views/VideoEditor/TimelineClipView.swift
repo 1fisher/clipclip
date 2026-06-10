@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import AppKit
 
 /// A single clip displayed on the timeline with thumbnail strip (video) or waveform (audio),
 /// trim handles, and instant drag visual feedback.
@@ -17,6 +18,7 @@ struct TimelineClipView: View {
     let onTrimEndAction: () -> Void
 
     @State private var waveformData: [Float] = []
+    @State private var thumbnails: [NSImage] = []
     @State private var isHovering = false
 
     private var clipWidth: CGFloat {
@@ -82,6 +84,7 @@ struct TimelineClipView: View {
         }
         .onAppear {
             loadWaveformIfNeeded()
+            loadThumbnailsIfNeeded()
         }
     }
 
@@ -107,16 +110,27 @@ struct TimelineClipView: View {
 
     private var videoThumbnailContent: some View {
         HStack(spacing: 0) {
-            ForEach(0..<max(1, Int(clipWidth / 50)), id: \.self) { _ in
-                Rectangle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.gray.opacity(0.2), .gray.opacity(0.05)],
-                            startPoint: .leading,
-                            endPoint: .trailing
+            if thumbnails.isEmpty {
+                ForEach(0..<max(1, Int(clipWidth / 50)), id: \.self) { _ in
+                    Rectangle()
+                        .fill(
+                            LinearGradient(
+                                colors: [.gray.opacity(0.2), .gray.opacity(0.05)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
                         )
-                    )
-                    .frame(width: 50)
+                        .frame(width: 50)
+                }
+            } else {
+                let thumbWidth = clipWidth / CGFloat(thumbnails.count)
+                ForEach(0..<thumbnails.count, id: \.self) { i in
+                    Image(nsImage: thumbnails[i])
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: thumbWidth)
+                        .clipped()
+                }
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: 6))
@@ -141,6 +155,14 @@ struct TimelineClipView: View {
         let url = EditorViewModel.videoURL(for: clip)
         WaveformCache.shared.generateAsync(from: url) { data in
             waveformData = data
+        }
+    }
+
+    private func loadThumbnailsIfNeeded() {
+        guard trackType == .video, thumbnails.isEmpty else { return }
+        let count = max(1, Int(clipWidth / 50))
+        ThumbnailCache.shared.generateAsync(for: clip, count: count) { images in
+            thumbnails = images
         }
     }
 
