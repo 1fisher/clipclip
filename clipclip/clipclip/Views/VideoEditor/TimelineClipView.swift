@@ -109,27 +109,31 @@ struct TimelineClipView: View {
     // MARK: - Video Thumbnail Strip
 
     private var videoThumbnailContent: some View {
-        HStack(spacing: 0) {
-            if thumbnails.isEmpty {
-                ForEach(0..<max(1, Int(clipWidth / 50)), id: \.self) { _ in
-                    Rectangle()
-                        .fill(
-                            LinearGradient(
-                                colors: [.gray.opacity(0.2), .gray.opacity(0.05)],
-                                startPoint: .leading,
-                                endPoint: .trailing
+        GeometryReader { geo in
+            HStack(spacing: 0) {
+                if thumbnails.isEmpty {
+                    ForEach(0..<max(1, Int(clipWidth / 50)), id: \.self) { _ in
+                        Rectangle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [.gray.opacity(0.2), .gray.opacity(0.05)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
                             )
-                        )
-                        .frame(width: 50)
-                }
-            } else {
-                let thumbWidth = clipWidth / CGFloat(thumbnails.count)
-                ForEach(0..<thumbnails.count, id: \.self) { i in
-                    Image(nsImage: thumbnails[i])
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: thumbWidth)
-                        .clipped()
+                            .frame(width: 50)
+                    }
+                } else {
+                    let thumbHeight = geo.size.height
+                    ForEach(0..<thumbnails.count, id: \.self) { i in
+                        let img = thumbnails[i]
+                        let aspect = img.size.width / max(img.size.height, 1)
+                        let thumbWidth = thumbHeight * aspect
+                        Image(nsImage: img)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: thumbWidth, height: thumbHeight)
+                    }
                 }
             }
         }
