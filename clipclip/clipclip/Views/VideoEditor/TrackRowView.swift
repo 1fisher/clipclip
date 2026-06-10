@@ -72,7 +72,7 @@ struct TrackRowView: View {
                     )
                     .offset(
                         x: clipXOffset(for: index) + (draggingClipID == clip.id ? dragOffset.width : 0),
-                        y: 8
+                        y: 8 + (draggingClipID == clip.id ? dragOffset.height : 0)
                     )
                     .zIndex(draggingClipID == clip.id ? 100 : 1)
                     .gesture(instantDragGesture(for: clip, at: index))
@@ -108,7 +108,11 @@ struct TrackRowView: View {
                     dragOffset = value.translation
 
                     let verticalOffset = value.translation.height
-                    if abs(verticalOffset) > trackHeight * 0.6 {
+                    let trackStep = trackHeight + trackSpacing
+                    let snapThreshold: CGFloat = 10
+                    let trackOffset = abs(verticalOffset) - trackStep
+
+                    if trackOffset > -snapThreshold {
                         let direction = verticalOffset > 0 ? 1 : -1
                         if let target = findRelativeTrack(offset: direction) {
                             dragTargetTrackID = target.id
@@ -125,13 +129,11 @@ struct TrackRowView: View {
             }
             .onEnded { value in
                 defer {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        draggingClipID = nil
-                        dragOffset = .zero
-                        isDragActive = false
-                        dragTargetTrackID = nil
-                        dragTargetIsNewTrack = false
-                    }
+                    draggingClipID = nil
+                    dragOffset = .zero
+                    isDragActive = false
+                    dragTargetTrackID = nil
+                    dragTargetIsNewTrack = false
                 }
 
                 guard let dragID = draggingClipID else { return }
