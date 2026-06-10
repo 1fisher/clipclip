@@ -55,7 +55,7 @@ final class EditorViewModel {
         self.project = project
         self.player = AVPlayer()
 
-        let loadedTracks = project.tracks
+        let loadedTracks = project.tracks.filter { !$0.clips.isEmpty }
         self.tracks = loadedTracks.sorted { $0.orderIndex < $1.orderIndex }
 
         setupPlayer()
@@ -501,9 +501,8 @@ final class EditorViewModel {
     }
 
     private func refreshTracks() {
-        project.tracks.removeAll { $0.clips.isEmpty }
-        let videoTracks = project.tracks.filter { $0.type == .video }.sorted { $0.orderIndex < $1.orderIndex }
-        let audioTracks = project.tracks.filter { $0.type == .audio }.sorted { $0.orderIndex < $1.orderIndex }
+        let videoTracks = project.tracks.filter { $0.type == .video && !$0.clips.isEmpty }.sorted { $0.orderIndex < $1.orderIndex }
+        let audioTracks = project.tracks.filter { $0.type == .audio && !$0.clips.isEmpty }.sorted { $0.orderIndex < $1.orderIndex }
         tracks = videoTracks + audioTracks
         for (i, track) in tracks.enumerated() {
             track.orderIndex = i

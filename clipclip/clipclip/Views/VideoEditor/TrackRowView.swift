@@ -14,8 +14,6 @@ struct TrackRowView: View {
     let onTrimEnd: (UUID, Double) -> Void
     let onTrimBegin: (UUID) -> Void
     let onTrimEndAction: () -> Void
-    let onDeleteTrack: () -> Void
-    let onAddClip: () -> Void
 
     @State private var draggingClipID: UUID?
     @State private var dragOffset: CGSize = .zero
@@ -35,12 +33,7 @@ struct TrackRowView: View {
     }
 
     var body: some View {
-        HStack(spacing: 0) {
-            TrackHeaderView(track: track, onDelete: onDeleteTrack, onAddClip: onAddClip)
-
-            Divider()
-
-            ZStack(alignment: .topLeading) {
+        ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: 6)
                     .fill(track.isMuted
                         ? trackColor.opacity(0.03)
@@ -94,8 +87,6 @@ struct TrackRowView: View {
                     }
                 }
             }
-            .frame(width: totalWidth, alignment: .topLeading)
-        }
         .frame(height: trackHeight + trackSpacing)
     }
 

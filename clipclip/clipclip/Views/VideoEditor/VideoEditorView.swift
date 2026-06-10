@@ -190,9 +190,6 @@ struct VideoEditorView: View {
                 onTrimEnd: { id, newEnd in editorVM.updateTrimEnd(newEnd) },
                 onTrimBegin: { id in editorVM.beginTrimming(clipID: id) },
                 onTrimEndAction: { editorVM.endTrimming() },
-                onAddTrack: { type in editorVM.addTrack(type: type) },
-                onDeleteTrack: { id in editorVM.deleteTrack(id) },
-                onToggleMute: { id in editorVM.toggleMute(trackID: id) },
                 onSeek: { x in editorVM.seekToPlayheadPosition(x: x) },
                 onPlayheadDragBegin: { editorVM.isPlayheadDragging = true },
                 onPlayheadDragEnd: { editorVM.isPlayheadDragging = false }

@@ -15,14 +15,10 @@ struct TimelineView: View {
     let onTrimEnd: (UUID, Double) -> Void
     let onTrimBegin: (UUID) -> Void
     let onTrimEndAction: () -> Void
-    let onAddTrack: (TrackType) -> Void
-    let onDeleteTrack: (UUID) -> Void
-    let onToggleMute: (UUID) -> Void
     let onSeek: (CGFloat) -> Void
     let onPlayheadDragBegin: () -> Void
     let onPlayheadDragEnd: () -> Void
 
-    @State private var isShowingAddTrackMenu = false
     @State private var playheadDragStartX: CGFloat = 0
     @State private var isDraggingPlayhead = false
 
@@ -37,23 +33,6 @@ struct TimelineView: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: true) {
             HStack(spacing: 0) {
-                // Fixed track headers column
-                VStack(spacing: trackSpacing) {
-                    ForEach(tracks, id: \.id) { track in
-                        TrackHeaderView(
-                            track: track,
-                            onDelete: { onDeleteTrack(track.id) },
-                            onAddClip: {}
-                        )
-                    }
-
-                    // Add track button
-                    addTrackButton
-                }
-                .frame(width: 130)
-
-                Divider()
-
                 // Scrollable track content
                 VStack(spacing: trackSpacing) {
                     ForEach(tracks, id: \.id) { track in
@@ -70,16 +49,14 @@ struct TimelineView: View {
                             onTrimStart: onTrimStart,
                             onTrimEnd: onTrimEnd,
                             onTrimBegin: onTrimBegin,
-                            onTrimEndAction: onTrimEndAction,
-                            onDeleteTrack: { self.onDeleteTrack(track.id) },
-                            onAddClip: {}
+                            onTrimEndAction: onTrimEndAction
                         )
                         .frame(width: totalWidth, alignment: .topLeading)
                     }
 
-                    // Empty space for add track button alignment
+                    // Bottom padding
                     Color.clear
-                        .frame(height: 36)
+                        .frame(height: 8)
                 }
                 .simultaneousGesture(
                     SpatialTapGesture()
@@ -118,30 +95,4 @@ struct TimelineView: View {
         )
     }
 
-    // MARK: - Add Track Button
-
-    private var addTrackButton: some View {
-        Menu {
-            Button(action: { onAddTrack(.video) }) {
-                Label("添加视频轨道", systemImage: "video.fill")
-            }
-            Button(action: { onAddTrack(.audio) }) {
-                Label("添加音频轨道", systemImage: "music.note")
-            }
-        } label: {
-            HStack(spacing: 4) {
-                Image(systemName: "plus.circle")
-                    .font(.caption)
-                Text("新轨道")
-                    .font(.caption2)
-            }
-            .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
-            .background(Color.secondary.opacity(0.06))
-            .clipShape(RoundedRectangle(cornerRadius: 6))
-        }
-        .menuStyle(.borderlessButton)
-        .padding(.horizontal, 8)
-    }
 }
