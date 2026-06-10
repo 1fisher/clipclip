@@ -1,0 +1,24 @@
+{
+	"configurations": [
+		{
+			"type": "swift",
+			"request": "launch",
+			"args": [],
+			"cwd": "${workspaceFolder:clipclip}",
+			"name": "Debug clipclip",
+			"target": "clipclip",
+			"configuration": "debug",
+			"preLaunchTask": "swift: Build Debug clipclip"
+		},
+		{
+			"type": "swift",
+			"request": "launch",
+			"args": [],
+			"cwd": "${workspaceFolder:clipclip}",
+			"name": "Release clipclip",
+			"target": "clipclip",
+			"configuration": "release",
+			"preLaunchTask": "swift: Build Release clipclip"
+		}
+	]
+}

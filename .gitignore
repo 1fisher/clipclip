@@ -1,0 +1,23 @@
+# Xcode
+*.build/
+DerivedData/
+build/
+*.xcworkspace/
+xcuserdata/
+*.xcodeproj/project.xcworkspace/
+*.xcodeproj/xcuserdata/
+Pods/
+
+# macOS
+.DS_Store
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+*.pem
+
+# Temp
+tmp/
+temp/
