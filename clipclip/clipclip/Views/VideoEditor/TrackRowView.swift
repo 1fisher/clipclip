@@ -109,10 +109,8 @@ struct TrackRowView: View {
 
                     let verticalOffset = value.translation.height
                     let trackStep = trackHeight + trackSpacing
-                    let snapThreshold: CGFloat = 10
-                    let trackOffset = abs(verticalOffset) - trackStep
 
-                    if trackOffset > -snapThreshold {
+                    if abs(verticalOffset) > trackStep / 2 {
                         let direction = verticalOffset > 0 ? 1 : -1
                         if let target = findRelativeTrack(offset: direction) {
                             dragTargetTrackID = target.id
@@ -122,7 +120,7 @@ struct TrackRowView: View {
                             dragTargetIsNewTrack = true
                         }
                     } else {
-                        dragTargetTrackID = nil
+                        dragTargetTrackID = track.id
                         dragTargetIsNewTrack = false
                     }
                 }
@@ -144,9 +142,12 @@ struct TrackRowView: View {
                 let targetTrackID = dragTargetTrackID ?? track.id
 
                 if dragTargetIsNewTrack {
-                    onMoveToNewTrack(dragID, track.type, targetSortIndex)
-                } else if targetTrackID != track.id || targetSortIndex != index {
-                    onMoveClip(dragID, targetTrackID, targetSortIndex)
+                    onMoveToNewTrack(dragID, track.type, 0)
+                } else {
+                    let targetTrackID = dragTargetTrackID ?? track.id
+                    if targetTrackID != track.id || targetSortIndex != index {
+                        onMoveClip(dragID, targetTrackID, targetSortIndex)
+                    }
                 }
             }
     }
