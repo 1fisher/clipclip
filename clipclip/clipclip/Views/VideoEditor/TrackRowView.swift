@@ -80,13 +80,13 @@ struct TrackRowView: View {
             }
 
             if isDragActive, let dragID = draggingClipID, dragTargetTrackID == track.id {
-                if let insertX = computeSnapX() {
+                ForEach(computeSnapLines(for: dragID), id: \.self) { snapX in
                     Rectangle()
-                        .fill(trackColor.opacity(0.5))
-                        .frame(width: 3, height: trackHeight - 12)
-                        .cornerRadius(1.5)
-                        .offset(x: insertX, y: 10)
+                        .fill(Color.blue.opacity(0.8))
+                        .frame(width: 2, height: trackHeight*2)
+                        .offset(x: snapX, y: 0)
                 }
+                .zIndex(200)
             }
         }
         .frame(height: trackHeight + trackSpacing)
@@ -174,21 +174,35 @@ struct TrackRowView: View {
     }
 
     private func computeSnapTargetX(for clipID: UUID, dragX: CGFloat) -> CGFloat? {
+        guard let dragClip = sortedClips.first(where: { $0.id == clipID }) else { return nil }
         let snapThreshold: CGFloat = 10
+        let dragWidth = CGFloat(dragClip.duration) * timeScale
+        let dragRightEdge = dragX + dragWidth
+
+        var bestOffset: CGFloat = snapThreshold
+        var bestSnap: CGFloat?
+
         for clip in sortedClips {
             if clip.id == clipID { continue }
             let leftEdge = CGFloat(clip.timelineOffset)
             let clipWidth = CGFloat(clip.duration) * timeScale
             let rightEdge = leftEdge + clipWidth
 
-            if abs(dragX - leftEdge) < snapThreshold {
-                return leftEdge
-            }
-            if abs(dragX - rightEdge) < snapThreshold {
-                return rightEdge
+            let checks: [(CGFloat, CGFloat)] = [
+                (abs(dragX - leftEdge), leftEdge),
+                (abs(dragX - rightEdge), rightEdge),
+                (abs(dragRightEdge - leftEdge), dragX + (leftEdge - dragRightEdge)),
+                (abs(dragRightEdge - rightEdge), dragX + (rightEdge - dragRightEdge)),
+            ]
+
+            for (dist, snapX) in checks {
+                if dist < bestOffset {
+                    bestOffset = dist
+                    bestSnap = snapX
+                }
             }
         }
-        return nil
+        return bestSnap
     }
 
     private func sortIndexAtX(_ x: CGFloat, excluding clipID: UUID) -> Int {
@@ -201,10 +215,29 @@ struct TrackRowView: View {
         return idx
     }
 
-    private func computeSnapX() -> CGFloat? {
-        guard let dragID = draggingClipID else { return nil }
-        let dragX = currentOffset(for: dragID) + dragOffset.width
-        return computeSnapTargetX(for: dragID, dragX: dragX)
+    private func computeSnapLines(for clipID: UUID) -> [CGFloat] {
+        guard let dragClip = sortedClips.first(where: { $0.id == clipID }) else { return [] }
+        let dragX = CGFloat(dragClip.timelineOffset) + dragOffset.width
+        let dragWidth = CGFloat(dragClip.duration) * timeScale
+        let snapThreshold: CGFloat = 10
+        var lines: [CGFloat] = []
+
+        for clip in sortedClips {
+            if clip.id == clipID { continue }
+            let leftEdge = CGFloat(clip.timelineOffset)
+            let rightEdge = leftEdge + CGFloat(clip.duration) * timeScale
+
+            // dragged clip's left edge snaps to other clip's left/right edge
+            if abs(dragX - leftEdge) < snapThreshold { lines.append(leftEdge) }
+            if abs(dragX - rightEdge) < snapThreshold { lines.append(rightEdge) }
+
+            // dragged clip's right edge snaps to other clip's left/right edge
+            let dragRightEdge = dragX + dragWidth
+            if abs(dragRightEdge - leftEdge) < snapThreshold { lines.append(leftEdge) }
+            if abs(dragRightEdge - rightEdge) < snapThreshold { lines.append(rightEdge) }
+        }
+
+        return Array(Set(lines)).sorted()
     }
 
     private func findRelativeTrack(offset: Int) -> Track? {
