@@ -86,6 +86,16 @@ struct VideoEditorView: View {
                 .frame(maxHeight: .infinity, alignment: .bottom)
             }
         }
+        .onKeyPress(.space) {
+            editorVM.togglePlay()
+            return .handled
+        }
+        .onKeyPress(KeyEquivalent("b")) {
+            if let clipID = editorVM.selectedClipID {
+                editorVM.splitClip(at: clipID, atTime: editorVM.currentTime)
+            }
+            return .handled
+        }
     }
 
     // MARK: - Wide Layout
