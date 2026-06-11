@@ -55,14 +55,10 @@ struct TimelineView: View {
                         )
                         .frame(width: totalWidth, alignment: .topLeading)
                     }
-
-                    // Bottom padding
-                    Color.clear
-                        .frame(height: 8)
                 }
             }
         }
-        .frame(maxHeight: timelineHeight + 40)
+        .frame(maxHeight: max(timelineHeight + 2 * (trackHeight + trackSpacing), 3 * (trackHeight + trackSpacing)))
     }
 
 }

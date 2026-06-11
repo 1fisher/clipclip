@@ -35,7 +35,9 @@ struct PlayheadDragOverlay: View {
     @State private var isDragging = false
 
     private var totalHeight: CGFloat {
-        CGFloat(trackCount) * (trackHeight + trackSpacing) + trackSpacing + 40
+        let trackArea = CGFloat(trackCount) * (trackHeight + trackSpacing) + trackSpacing
+        let extraSpace = 2 * (trackHeight + trackSpacing)
+        return max(trackArea + extraSpace, 3 * (trackHeight + trackSpacing))
     }
 
     var body: some View {

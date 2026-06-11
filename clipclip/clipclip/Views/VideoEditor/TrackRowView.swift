@@ -43,6 +43,7 @@ struct TrackRowView: View {
             : trackColor.opacity(0.06)
         )
         .frame(height: trackHeight - 4)
+        // .padding(4)
         .padding(.horizontal, 4)
         .padding(.top, 4)
 
@@ -86,9 +87,9 @@ struct TrackRowView: View {
       if isDragActive, let dragID = draggingClipID, dragTargetTrackID == track.id {
         ForEach(computeSnapLines(for: dragID), id: \.self) { snapX in
           Rectangle()
-                .fill(Color.red.opacity(0.8))
+            .fill(Color.red.opacity(0.8))
             .frame(width: 2, height: trackHeight * 2)
-            .position(x: snapX + 2, y: (trackHeight + trackSpacing) / 2)
+            .position(x: snapX, y: trackHeight / 2)
         }
         .allowsHitTesting(false)
       }
@@ -109,23 +110,7 @@ struct TrackRowView: View {
 
         if draggingClipID == clip.id {
           dragOffset = value.translation
-
-          let verticalOffset = value.translation.height
-          let trackStep = trackHeight + trackSpacing
-
-          if abs(verticalOffset) > trackStep / 2 {
-            let direction = verticalOffset > 0 ? 1 : -1
-            if let target = findRelativeTrack(offset: direction) {
-              dragTargetTrackID = target.id
-              dragTargetIsNewTrack = false
-            } else {
-              dragTargetTrackID = nil
-              dragTargetIsNewTrack = true
-            }
-          } else {
-            dragTargetTrackID = track.id
-            dragTargetIsNewTrack = false
-          }
+          updateDragTarget(verticalOffset: dragOffset.height)
         }
       }
       .onEnded { value in
@@ -167,6 +152,28 @@ struct TrackRowView: View {
     isDragActive = false
     dragTargetTrackID = nil
     dragTargetIsNewTrack = false
+  }
+
+  private func updateDragTarget(verticalOffset: CGFloat) {
+    let trackStep = trackHeight + trackSpacing
+    let threshold = trackStep * 0.3
+
+    if abs(verticalOffset) < threshold {
+      dragTargetTrackID = track.id
+      dragTargetIsNewTrack = false
+      return
+    }
+
+    let direction: Int = verticalOffset > 0 ? 1 : -1
+    let steps = Int((abs(verticalOffset) - threshold) / trackStep) + 1
+
+    if let target = findRelativeTrack(offset: direction * steps) {
+      dragTargetTrackID = target.id
+      dragTargetIsNewTrack = false
+    } else {
+      dragTargetTrackID = nil
+      dragTargetIsNewTrack = true
+    }
   }
 
   // MARK: - Position Helpers
@@ -245,12 +252,14 @@ struct TrackRowView: View {
 
   private func findRelativeTrack(offset: Int) -> Track? {
     guard let project = track.project else { return nil }
-    let sortedTracks = project.tracks.sorted { $0.orderIndex < $1.orderIndex }
-    guard let currentIndex = sortedTracks.firstIndex(where: { $0.id == track.id }) else {
+    let sameTypeTracks = project.tracks
+      .filter { $0.type == track.type }
+      .sorted { $0.orderIndex < $1.orderIndex }
+    guard let currentIndex = sameTypeTracks.firstIndex(where: { $0.id == track.id }) else {
       return nil
     }
     let targetIndex = currentIndex + offset
-    guard targetIndex >= 0, targetIndex < sortedTracks.count else { return nil }
-    return sortedTracks[targetIndex]
+    guard targetIndex >= 0, targetIndex < sameTypeTracks.count else { return nil }
+    return sameTypeTracks[targetIndex]
   }
 }
